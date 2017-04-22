@@ -13,7 +13,7 @@ namespace Opti\Tools;
 */
 class Identify extends BaseTool
 {
-    public $binPath = '/usr/local/bin/identify';
+    public $bin = '/usr/local/bin/identify';
 
     public $template = '{options} {input}';
 

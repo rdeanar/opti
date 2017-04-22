@@ -5,11 +5,14 @@ namespace Opti;
 use Opti\Scenarios\ScenarioRunner;
 use Opti\Scenarios\Step;
 use Opti\Tools\BaseTool;
+use Opti\Tools\ConfigurableTool;
 use Opti\Tools\Convert;
 use Opti\Tools\Identify;
 use Opti\Tools\Jpegoptim;
 use Opti\Utils\TempFile;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 class ImageOpti
 {
@@ -40,20 +43,24 @@ class ImageOpti
     {
         $this->logger = $logger;
         $this->initTools();
+
+        $this->populateConfigFromFile(__DIR__ . DIRECTORY_SEPARATOR . 'Data' . DIRECTORY_SEPARATOR . 'config.yml');
     }
 
 
     protected function initTools()
     {
-        $this->addTool('convert', Convert::class);
         $this->addTool('identify', Identify::class);
-        $this->addTool('jpegoptim', Jpegoptim::class);
     }
 
-    protected function addTool($name, $class)
+    protected function addTool($name, $class, $definition = null)
     {
         if (!array_key_exists($name, $this->tools)) {
             $this->tools[$name] = new $class($this->logger);
+
+            if ($definition) {
+                $this->tools[$name]->configure($definition);
+            }
         }
     }
 
@@ -72,6 +79,38 @@ class ImageOpti
         }
 
         throw new \Exception('Tool ' . $name . ' not found');
+    }
+
+    /**
+     * Reads file and populate config from it
+     *
+     * @param string $filePath
+     */
+    public function populateConfigFromFile($filePath)
+    {
+        try {
+            $config = Yaml::parse(file_get_contents($filePath));
+
+            if (!isset($config['opti'])) {
+                $this->logger->error('No config found in file: ' . $filePath . '. Put all configuration under \'opti\' section.');
+                return;
+            } else {
+                $config = $config['opti'];
+            }
+
+        } catch (ParseException $e) {
+            $this->logger->error("Unable to parse the YAML string: " . $e->getMessage());
+            return;
+        }
+
+        if (!empty($config['tools'])) {
+            foreach ($config['tools'] as $name => $definition) {
+
+                $this->logger->debug('Add new configurable tool: ' . $name);
+
+                $this->addTool($name, ConfigurableTool::class, $definition);
+            }
+        }
     }
 
     public function process($sourceFilePath)

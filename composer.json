@@ -12,7 +12,8 @@
   "require": {
     "symfony/console": "3.2.x-dev",
     "symfony/process": "^3.2",
-    "psr/log": "^1.0"
+    "psr/log": "^1.0",
+    "symfony/yaml": "^3.2"
   },
   "autoload": {
     "psr-4": {

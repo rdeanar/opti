@@ -19,7 +19,7 @@ abstract class BaseTool
     /**
      * @var string Path to binary
      */
-    public $binPath;
+    public $bin;
 
     /**
      * @var array tools configurations
@@ -56,7 +56,7 @@ abstract class BaseTool
 
         $command = $this->buildCommand($options, $arguments);
 
-        $this->logger->info('Run command:' . $command);
+        $this->logger->info('Run command: ' . $command);
 
         $process = new Process($command);
         $process->run();
@@ -90,12 +90,39 @@ abstract class BaseTool
             return '{' . $value . '}';
         }, array_keys($replacements));
 
-        $command = $this->binPath . ' ' . str_replace($search, array_values($replacements), $this->template);
+        $command = $this->bin . ' ' . str_replace($search, array_values($replacements), $this->template);
 
         if ($this->allowPipe) {
             $command = $this->pipePrefix . ' ' . $command . ' ' . $this->pipeSuffix;
         }
 
         return $command;
+    }
+
+    /**
+     * Fulfill by config
+     *
+     * @param array $config
+     * @param bool $strict
+     *
+     * @return $this
+     * @throws \Exception
+     */
+    public function configure($config, $strict = false)
+    {
+        foreach (['bin', 'template', 'configs'] as $option) {
+
+            if (empty($config[$option])) {
+                if ($strict) {
+                    throw new \Exception('Required option is missing: ' . $option);
+                }
+            } else {
+                $this->logger->debug('Option "' . $option . '" = ' . var_export($config[$option], true));
+
+                $this->{$option} = $config[$option];
+            }
+        }
+
+        return $this;
     }
 }

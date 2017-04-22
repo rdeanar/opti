@@ -1,0 +1,35 @@
+opti:
+  enable:
+    - identify
+    - convert
+    - jpegoptim
+  scenarios:
+    JPEG:
+      - convert:jpeg85, convert:default
+      - jpegoptim:jpeg85
+      - jpegoptim:jpeg35
+  options:
+    jpegoptim:jpeg35:
+      - "-m35"
+  tools:
+    convert: # https://www.imagemagick.org/script/convert.php
+      bin: convert
+      template: '{options} {input} {output}'
+      configs:
+        default:
+          - '-strip'
+        jpeg85:
+          - '-sampling-factor 4:2:0'
+          - '-strip'
+          - '-quality 85'
+    jpegoptim: # https://github.com/glennr/jpegoptim
+      bin: jpegoptim
+      template: '{options} {input} --stdout > {output}'
+      configs:
+        default:
+          - '-s'
+        jpeg85:
+          - '-p'
+          - '-s'
+          - '-m85'
+
