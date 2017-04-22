@@ -1,0 +1,22 @@
+{
+  "name": "deanar/opti",
+  "description": "Optimize images using different tools",
+  "minimum-stability": "dev",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Mikhail Razumovskiy",
+      "email": "rdeanar@gmail.com"
+    }
+  ],
+  "require": {
+    "symfony/console": "3.2.x-dev",
+    "symfony/process": "^3.2",
+    "psr/log": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Opti\\": "src/Opti"
+    }
+  }
+}

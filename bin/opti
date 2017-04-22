@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+use Opti\Application;
+
+error_reporting(-1);
+if (function_exists('ini_set')) {
+    @ini_set('display_errors', 1);
+}
+
+require __DIR__.'/../src/bootstrap.php';
+
+putenv('OPTI_BINARY='.realpath($_SERVER['argv'][0]));
+
+
+$application = new Application();
+$application->run();
