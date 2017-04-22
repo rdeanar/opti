@@ -64,7 +64,7 @@ class ConsoleOutputLogger extends AbstractLogger
         }
 
         // TODO paint $level
-        $message = '[' . strtoupper($level) . '] ' . $message;
+        $message = '[ ' . strtoupper($level) . ' ] ' . $message;
 
         $this->output->writeln($message);
     }
