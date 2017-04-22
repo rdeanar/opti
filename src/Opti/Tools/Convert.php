@@ -16,6 +16,8 @@ class Convert extends BaseTool
 {
     public $binPath = 'convert';
 
+    public $template = '{options} {input} {output}';
+
     public $allowPipe = false; //true;
 
     public $pipeSuffix = '-';

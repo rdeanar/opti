@@ -15,6 +15,8 @@ class Identify extends BaseTool
 {
     public $binPath = '/usr/local/bin/identify';
 
+    public $template = '{options} {input}';
+
     public $configs = [
         'default' => [
             '-format %m',

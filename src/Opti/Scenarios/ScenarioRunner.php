@@ -54,6 +54,7 @@ class ScenarioRunner
 
             if (!array_key_exists($toolName, $this->tools)) {
                 $this->logger->error('Tool not declared: ' . $toolName);
+                return null;
             }
 
             $step = new Step($this->logger, $this->tools[$toolName], $configName);

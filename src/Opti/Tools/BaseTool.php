@@ -26,8 +26,13 @@ abstract class BaseTool
      */
     public $configs = [];
 
+    /**
+     * @var string template of command call
+     */
+    public $template = '{options} {input} {output}';
+
     protected $pipePrefix;
-    protected $pipeSuffix = '-';
+    protected $pipeSuffix;
 
     /**
      * BaseTool constructor.
@@ -39,17 +44,17 @@ abstract class BaseTool
         $this->logger = $logger;
     }
 
-    public function run($config, $arguments)
+    public function run($options, $arguments)
     {
-        if (!is_array($config)) {
-            if (isset($this->configs[$config])) {
-                $config = $this->configs[$config];
+        if (!is_array($options)) {
+            if (isset($this->configs[$options])) {
+                $options = $this->configs[$options];
             } else {
-                throw new \Exception('Not found configuration ' . $config . ' for ' . __CLASS__);
+                throw new \Exception('Not found configuration ' . $options . ' for ' . __CLASS__);
             }
         }
 
-        $command = $this->buildCommand($config, $arguments);
+        $command = $this->buildCommand($options, $arguments);
 
         $this->logger->info('Run command:' . $command);
 
@@ -64,17 +69,28 @@ abstract class BaseTool
         return $process->getOutput();
     }
 
-    private function buildCommand($config, $arguments)
+    /**
+     * @param $options
+     * @param array $arguments [inputFilePath, outputFilePath]
+     *
+     * @return string
+     */
+    private function buildCommand($options, $arguments)
     {
-        if (!empty($arguments)) {
-            if (!is_array($arguments)) {
-                $arguments = [$arguments];
-            }
-
-            $config = array_merge($config, $arguments);
+        if (is_array($options)) {
+            $options = implode(' ', $options);
         }
 
-        $command = $this->binPath . ' ' . implode(' ', $config);
+        $replacements = array_merge(
+            ['options' => $options],
+            $arguments
+        );
+
+        $search = array_map(function ($value) {
+            return '{' . $value . '}';
+        }, array_keys($replacements));
+
+        $command = $this->binPath . ' ' . str_replace($search, array_values($replacements), $this->template);
 
         if ($this->allowPipe) {
             $command = $this->pipePrefix . ' ' . $command . ' ' . $this->pipeSuffix;

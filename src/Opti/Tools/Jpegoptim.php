@@ -13,9 +13,11 @@ namespace Opti\Tools;
 */
 class Jpegoptim extends BaseTool
 {
-    public $allowPipe = true;
+    public $allowPipe = false;
 
     public $binPath = 'jpegoptim';
+
+    public $template = '{options} {input} --stdout > {output}';
 
     public $pipeSuffix = '--stdout';
 

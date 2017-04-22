@@ -135,7 +135,7 @@ class Step
     {
         // Prepare
         if (!$this->isVirtual()) {
-            $this->outpuFilePath = TempFile::getTempFilePath(); // TODO call `clearAll` after
+            $this->outpuFilePath = TempFile::getTempFilePath();
         }
 
         // Process
@@ -145,14 +145,18 @@ class Step
         }
 
         if (!$this->isVirtual()) {
-            $this->tool->run($this->config, [$this->inputFilePath, $this->outpuFilePath]);
+
+            $this->tool->run(
+                $this->config,
+                [
+                    'input'  => $this->inputFilePath,
+                    'output' => $this->outpuFilePath,
+                ]
+            );
 
             $this->outputFileSize = filesize($this->outpuFilePath);
         } else {
-            throw new \Exception('Not implemented yet');
+            throw new \Exception('Pipe is not implemented yet');
         }
-        //$output = $this->tool->run($this->config, )
     }
-
-
 }

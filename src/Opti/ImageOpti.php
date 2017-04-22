@@ -7,6 +7,7 @@ use Opti\Scenarios\Step;
 use Opti\Tools\BaseTool;
 use Opti\Tools\Convert;
 use Opti\Tools\Identify;
+use Opti\Tools\Jpegoptim;
 use Opti\Utils\TempFile;
 use Psr\Log\LoggerInterface;
 
@@ -24,9 +25,8 @@ class ImageOpti
 
     protected $scenarios = [
         self::FORMAT_JPEG => [
-            ['convert:jpeg85'],
             ['convert:jpeg85', 'convert:default'],
-//            ['convert:default'],
+            ['jpegoptim:jpeg85'],
         ],
         //self::FORMAT_PNG  => [],
     ];
@@ -47,6 +47,7 @@ class ImageOpti
     {
         $this->addTool('convert', Convert::class);
         $this->addTool('identify', Identify::class);
+        $this->addTool('jpegoptim', Jpegoptim::class);
     }
 
     protected function addTool($name, $class)
@@ -75,48 +76,58 @@ class ImageOpti
 
     public function process($sourceFilePath)
     {
-        $startTime = microtime(true);
-
         try {
-            $format = $this->getTool('identify')->run('default', $sourceFilePath);
-        } catch (\Symfony\Component\Process\Exception\ProcessFailedException $e) {
-            $this->logger->error('Can not determinate image format in file: ' . $sourceFilePath . ' Skip.');
-            return;
-        }
-
-        $this->logger->info('Format detected: ' . $format);
-
-        if (!$this->isFormatValid($format)) {
-            $this->logger->error('No tool registered for this format. Skip.');
-            return;
-        }
-
-        $runner = new ScenarioRunner($this->logger, $this->tools, $sourceFilePath);
-
-        /** @var null|Step $mostEffectiveStep */
-        $mostEffectiveStep = null;
-        foreach ($this->scenarios[$format] as $scenario) {
-            $currentScenarioStep = $runner->runScenario($scenario);
-            if (is_null($mostEffectiveStep) OR $mostEffectiveStep->getOutputSize() > $currentScenarioStep->getOutputSize()) {
-                $mostEffectiveStep = $currentScenarioStep;
+            $startTime = microtime(true);
+            try {
+                $format = $this->getTool('identify')->run('default', ['input' => $sourceFilePath]);
+            } catch (\Symfony\Component\Process\Exception\ProcessFailedException $e) {
+                $this->logger->error('Can not determinate image format in file: ' . $sourceFilePath . ' Skip.');
+                return;
             }
+
+            $this->logger->info('Format detected: ' . $format);
+
+            if (!$this->isFormatValid($format)) {
+                $this->logger->error('No tool registered for this format. Skip.');
+                return;
+            }
+
+            $runner = new ScenarioRunner($this->logger, $this->tools, $sourceFilePath);
+
+            /** @var null|Step $mostEffectiveStep */
+            $mostEffectiveStep = null;
+            foreach ($this->scenarios[$format] as $scenario) {
+                $currentScenarioStep = $runner->runScenario($scenario);
+                if (is_null($currentScenarioStep)) {
+                    continue;
+                }
+                if (is_null($mostEffectiveStep) OR $mostEffectiveStep->getOutputSize() > $currentScenarioStep->getOutputSize()) {
+                    $mostEffectiveStep = $currentScenarioStep;
+                }
+            }
+
+            if (is_null($mostEffectiveStep)) {
+                $this->logger->error('No one scenario was run.');
+                return;
+            }
+
+            $this->logger->info('Most effective scenario: ' . $mostEffectiveStep->getOutputSize() . ' filePath: ' . $mostEffectiveStep->getOutputPath());
+
+            $sourceFileSize = filesize($sourceFilePath);
+            $destFileSize = $mostEffectiveStep->getOutputSize();
+
+            $duration = round(microtime(true) - $startTime, 3);
+
+            if ($sourceFileSize > $destFileSize) {
+                $this->logger->alert('File ' . $sourceFilePath . ' reduced: ' . $sourceFileSize . ' -> ' . $destFileSize . ' ' . (round(100 * $destFileSize / $sourceFileSize, 2)) . '% in ' . $duration . 's');
+                copy($mostEffectiveStep->getOutputPath(), $sourceFilePath);
+            } else {
+                $this->logger->alert('File ' . $sourceFilePath . ' can not be reduced.');
+            }
+
+        } finally {
+            TempFile::clearAll();
         }
-
-        $this->logger->info('Most effective scenario: ' . $mostEffectiveStep->getOutputSize() . ' filePath: ' . $mostEffectiveStep->getOutputPath());
-
-        $sourceFileSize = filesize($sourceFilePath);
-        $destFileSize = $mostEffectiveStep->getOutputSize();
-
-        $duration = round(microtime(true) - $startTime, 3);
-
-        if ($sourceFileSize > $destFileSize) {
-            $this->logger->alert('File ' . $sourceFilePath . ' reduced: ' . $sourceFileSize . ' -> ' . $destFileSize . ' ' . (round(100 * $destFileSize / $sourceFileSize, 2)) . '% in ' . $duration . 's');
-            copy($mostEffectiveStep->getOutputPath(), $sourceFilePath);
-        } else {
-            $this->logger->alert('File ' . $sourceFilePath . ' can not be reduced.');
-        }
-
-        TempFile::clearAll();
     }
 
     protected function isFormatValid($format)
