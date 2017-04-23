@@ -9,7 +9,7 @@
 namespace Opti\tests;
 
 
-class TestCase extends \PHPUnit\Framework\TestCase
+class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * @return bool Returns `true` if tests runs on the Windows OS
