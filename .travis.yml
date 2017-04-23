@@ -30,4 +30,4 @@ install:
   - travis_retry composer install --prefer-dist --no-interaction
 
 script:
-  - phpunit --verbose
+  - vendor/bin/phpunit --verbose
