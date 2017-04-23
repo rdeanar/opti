@@ -91,4 +91,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# phpunit itself is not needed
+phpunit.phar
+# local phpunit config
+/phpunit.xml
+
 ./data
