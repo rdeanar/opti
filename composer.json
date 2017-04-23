@@ -17,7 +17,11 @@
   },
   "autoload": {
     "psr-4": {
-      "Opti\\": "src/Opti"
+      "Opti\\": "src/Opti",
+      "Opti\\tests\\": "tests"
     }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.1"
   }
 }

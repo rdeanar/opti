@@ -75,7 +75,7 @@ abstract class BaseTool
      *
      * @return string
      */
-    private function buildCommand($options, $arguments)
+    protected function buildCommand($options, $arguments)
     {
         if (is_array($options)) {
             $options = implode(' ', $options);
