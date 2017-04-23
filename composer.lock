@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d8a282e7a5f2a79486c4cd3a1ad83e2c",
-    "content-hash": "3cd4186c332e5f5bec1590fb888f0566",
+    "hash": "4cf2d2de6c3c369cf1bfc293c939e87f",
+    "content-hash": "81382c0f19b52510c84990ccb9617324",
     "packages": [
         {
             "name": "psr/log",
@@ -56,16 +56,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "3.2.x-dev",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "07e6eb516bda4d09a9327a8dc5bde76e0a00e15d"
+                "reference": "240ef75712a842899d5bdbb97bc83e02b362acbf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/07e6eb516bda4d09a9327a8dc5bde76e0a00e15d",
-                "reference": "07e6eb516bda4d09a9327a8dc5bde76e0a00e15d",
+                "url": "https://api.github.com/repos/symfony/console/zipball/240ef75712a842899d5bdbb97bc83e02b362acbf",
+                "reference": "240ef75712a842899d5bdbb97bc83e02b362acbf",
                 "shasum": ""
             },
             "require": {
@@ -73,10 +73,15 @@
                 "symfony/debug": "~2.8|~3.0",
                 "symfony/polyfill-mbstring": "~1.0"
             },
+            "conflict": {
+                "symfony/dependency-injection": "<3.3"
+            },
             "require-dev": {
                 "psr/log": "~1.0",
+                "symfony/dependency-injection": "~3.3",
                 "symfony/event-dispatcher": "~2.8|~3.0",
                 "symfony/filesystem": "~2.8|~3.0",
+                "symfony/http-kernel": "~2.8|~3.0",
                 "symfony/process": "~2.8|~3.0"
             },
             "suggest": {
@@ -88,7 +93,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.2-dev"
+                    "dev-master": "3.3-dev"
                 }
             },
             "autoload": {
@@ -115,7 +120,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2017-04-19 20:17:50"
+            "time": "2017-04-19 23:40:30"
         },
         {
             "name": "symfony/debug",
@@ -340,9 +345,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "symfony/console": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
