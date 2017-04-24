@@ -1,5 +1,7 @@
 # Opti - decrease your image size
-PHP component for image optimization which uses various tools and detects the best one for each image
+PHP component for image optimization which uses various chains of tools and detects the best one for each image
+
+[![Build Status](https://travis-ci.org/rdeanar/opti.svg?branch=master)](https://travis-ci.org/rdeanar/opti)
 
 
 ## Usage
