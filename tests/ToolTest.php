@@ -3,15 +3,15 @@
 namespace Opti\tests;
 
 use Opti\tests\data\BaseToolTestClass;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class ToolTest extends TestCase
 {
 
+    /**
+     * @expectedException \Exception
+     */
     public function testConfigureStrictException()
     {
-        $this->expectException(\Exception::class);
-
         $config = [
             'bin'      => 'ls',
             'template' => '{options}',
@@ -73,11 +73,10 @@ class ToolTest extends TestCase
 
     /**
      * @depends testCommandBuild
+     * @expectedException \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function testRunNonExistentCommandWithFail()
     {
-        $this->expectException(ProcessFailedException::class);
-
         $config = [
             'bin'      => 'non-existent-command',
             'template' => '{options} {path}',
