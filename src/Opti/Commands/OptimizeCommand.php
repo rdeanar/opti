@@ -8,7 +8,7 @@
 
 namespace Opti\Commands;
 
-use Opti\ImageOpti;
+use Opti\Opti;
 use Opti\Utils\ConsoleOutputLogger;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
@@ -52,7 +52,7 @@ class OptimizeCommand extends Command
         ]);
 
         $logger = new ConsoleOutputLogger($output, LogLevel::DEBUG);
-        $optimizer = new ImageOpti($logger);
+        $optimizer = new Opti($logger);
 
         foreach ($input->getArgument('files') as $path) {
             $optimizer->process($path);

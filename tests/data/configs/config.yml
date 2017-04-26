@@ -1,0 +1,11 @@
+opti:
+  scenarios:
+    JPEG:
+      - test:test
+  tools:
+    test:
+      bin: testbin
+      template: '{options} {input}'
+      configs:
+        test:
+          - '-testoption'

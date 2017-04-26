@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
-class ImageOpti
+class Opti
 {
     const FORMAT_JPEG = 'JPEG';
     const FORMAT_PNG = 'PNG';
@@ -35,7 +35,7 @@ class ImageOpti
     ];
 
     /**
-     * ImageOpti constructor.
+     * Opti constructor.
      *
      * @param LoggerInterface $logger
      */
@@ -44,9 +44,16 @@ class ImageOpti
         $this->logger = $logger;
         $this->initTools();
 
-        $this->populateConfigFromFile(__DIR__ . DIRECTORY_SEPARATOR . 'Data' . DIRECTORY_SEPARATOR . 'config.yml');
+        $this->configureFromFile(__DIR__ . DIRECTORY_SEPARATOR . 'Data' . DIRECTORY_SEPARATOR . 'config.yml');
     }
 
+    /**
+     * @return array
+     */
+    public function getScenarios()
+    {
+        return $this->scenarios;
+    }
 
     protected function initTools()
     {
@@ -72,13 +79,13 @@ class ImageOpti
      * @return BaseTool
      * @throws \Exception
      */
-    protected function getTool($name)
+    public function getTool($name)
     {
         if (array_key_exists($name, $this->tools)) {
             return $this->tools[$name];
         }
 
-        throw new \Exception('Tool ' . $name . ' not found');
+        throw new \Exception('Tool ' . $name . ' not registered');
     }
 
     /**
@@ -86,23 +93,52 @@ class ImageOpti
      *
      * @param string $filePath
      */
-    public function populateConfigFromFile($filePath)
+    public function configureFromFile($filePath)
     {
+        $config = $this->readConfigFromFile($filePath);
+        if ($config) {
+            $this->configure($config);
+        }
+    }
+
+    /**
+     * Read config from file and parse it
+     * Return `false` if error occurs.
+     *
+     * @param $filePath
+     *
+     * @return bool
+     */
+    protected function readConfigFromFile($filePath)
+    {
+        if (!file_exists($filePath)) {
+            $this->logger->error('Config file not found: ' . $filePath);
+        }
+
         try {
             $config = Yaml::parse(file_get_contents($filePath));
 
             if (!isset($config['opti'])) {
                 $this->logger->error('No config found in file: ' . $filePath . '. Put all configuration under \'opti\' section.');
-                return;
+                return false;
             } else {
-                $config = $config['opti'];
+                return $config['opti'];
             }
 
         } catch (ParseException $e) {
             $this->logger->error("Unable to parse the YAML string: " . $e->getMessage());
-            return;
+            return false;
         }
+    }
 
+    /**
+     * Fulfill settings from config
+     *
+     * @param $config
+     * @param bool $replace
+     */
+    public function configure($config, $replace = false)
+    {
         if (!empty($config['tools'])) {
             foreach ($config['tools'] as $name => $definition) {
 
@@ -110,6 +146,16 @@ class ImageOpti
 
                 $this->addTool($name, ConfigurableTool::class, $definition);
             }
+        }
+
+        if (!empty($config['scenarios'])) {
+            $this->scenarios = $config['scenarios'];
+            $this->logger->debug('Fulfill scenarios in replace mode');
+        }
+
+        if (!empty($config['scenarios+'])) {
+            $this->scenarios = array_merge_recursive($this->scenarios, $config['scenarios+']);
+            $this->logger->debug('Fulfill scenarios in append mode');
         }
     }
 
@@ -126,7 +172,7 @@ class ImageOpti
 
             $this->logger->info('Format detected: ' . $format);
 
-            if (!$this->isFormatValid($format)) {
+            if (!$this->isFormatRegistered($format)) {
                 $this->logger->error('No tool registered for this format. Skip.');
                 return;
             }
@@ -169,7 +215,7 @@ class ImageOpti
         }
     }
 
-    protected function isFormatValid($format)
+    protected function isFormatRegistered($format)
     {
         return array_key_exists($format, $this->scenarios);
     }
