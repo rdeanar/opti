@@ -28,8 +28,8 @@ https://github.com/glennr/jpegoptim
 * Add more tools
 * ~~Move internal configurations to file~~ DONE
 * Command option for setting log level
-* Ability to read external config file
-* Allow to register new tools on the fly
+* ~~Ability to read external config file~~
+* ~~Allow to register new tools on the fly~~
 * Config lint command https://symfony.com/doc/current/components/yaml.html#syntax-validation
 * Dummy config create command
 * Tool options replacements, i.e. {quality}

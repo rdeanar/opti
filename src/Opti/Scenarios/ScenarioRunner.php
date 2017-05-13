@@ -40,6 +40,9 @@ class ScenarioRunner
      */
     public function runScenario($scenario)
     {
+        if (!is_array($scenario)) {
+            $scenario = array_map('trim', explode(',', $scenario));
+        }
 
         if (empty($scenario)) {
             $this->logger->error('Scenario is empty');

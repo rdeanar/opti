@@ -26,13 +26,7 @@ class Opti
      */
     protected $logger;
 
-    protected $scenarios = [
-        self::FORMAT_JPEG => [
-            ['convert:jpeg85', 'convert:default'],
-            ['jpegoptim:jpeg85'],
-        ],
-        //self::FORMAT_PNG  => [],
-    ];
+    protected $scenarios = [];
 
     /**
      * Opti constructor.
@@ -66,7 +60,7 @@ class Opti
             $this->tools[$name] = new $class($this->logger);
 
             if ($definition) {
-                $this->tools[$name]->configure($definition);
+                $this->tools[$name]->configure($definition, true);
             }
         }
     }
@@ -74,15 +68,20 @@ class Opti
     /**
      * Get Tool by name
      *
-     * @param $name
+     * @param string $name
+     * @param bool $silent If `true` no exception will be throwed if tool not found
      *
-     * @return BaseTool
+     * @return bool|BaseTool
      * @throws \Exception
      */
-    public function getTool($name)
+    public function getTool($name, $silent = false)
     {
         if (array_key_exists($name, $this->tools)) {
             return $this->tools[$name];
+        }
+
+        if ($silent) {
+            return false;
         }
 
         throw new \Exception('Tool ' . $name . ' not registered');
@@ -95,6 +94,8 @@ class Opti
      */
     public function configureFromFile($filePath)
     {
+        $this->logger->info('Configure from file: ' . $filePath);
+
         $config = $this->readConfigFromFile($filePath);
         if ($config) {
             $this->configure($config);
@@ -113,6 +114,7 @@ class Opti
     {
         if (!file_exists($filePath)) {
             $this->logger->error('Config file not found: ' . $filePath);
+            return false;
         }
 
         try {
@@ -144,7 +146,11 @@ class Opti
 
                 $this->logger->debug('Add new configurable tool: ' . $name);
 
-                $this->addTool($name, ConfigurableTool::class, $definition);
+                if ($tool = $this->getTool($name, true)) {
+                    $tool->configure($definition, false);
+                } else {
+                    $this->addTool($name, ConfigurableTool::class, $definition);
+                }
             }
         }
 

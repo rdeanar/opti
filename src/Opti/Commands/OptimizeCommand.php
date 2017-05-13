@@ -36,7 +36,7 @@ class OptimizeCommand extends Command
             new InputDefinition([
                 new InputOption('foo', 'f'),
                 //new InputOption('bar', 'b', InputOption::VALUE_REQUIRED),
-                new InputOption('cat', 'c', InputOption::VALUE_OPTIONAL),
+                new InputOption('config', 'c', InputOption::VALUE_OPTIONAL),
                 new InputArgument('files', InputArgument::IS_ARRAY | InputArgument::REQUIRED),
             ])
         );
@@ -53,6 +53,12 @@ class OptimizeCommand extends Command
 
         $logger = new ConsoleOutputLogger($output, LogLevel::DEBUG);
         $optimizer = new Opti($logger);
+
+        $configFile = $input->getOption('config');
+
+        if (!is_null($configFile)) {
+            $optimizer->configureFromFile($configFile);
+        }
 
         foreach ($input->getArgument('files') as $path) {
             $optimizer->process($path);

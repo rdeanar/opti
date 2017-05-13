@@ -119,7 +119,11 @@ abstract class BaseTool
             } else {
                 $this->logger->debug('Option "' . $option . '" = ' . var_export($config[$option], true));
 
-                $this->{$option} = $config[$option];
+                if (is_array($config[$option])) {
+                    $this->{$option} = array_merge($this->{$option}, $config[$option]);
+                } else {
+                    $this->{$option} = $config[$option];
+                }
             }
         }
 
