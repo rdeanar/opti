@@ -34,9 +34,11 @@ class OptimizeCommand extends Command
 
         $this->setDefinition(
             new InputDefinition([
-                new InputOption('foo', 'f'),
-                //new InputOption('bar', 'b', InputOption::VALUE_REQUIRED),
+
                 new InputOption('config', 'c', InputOption::VALUE_OPTIONAL),
+                new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug.'),
+                new InputOption('no-colors', '', InputOption::VALUE_NONE, 'Force no colors in output'),
+
                 new InputArgument('files', InputArgument::IS_ARRAY | InputArgument::REQUIRED),
             ])
         );
@@ -51,7 +53,7 @@ class OptimizeCommand extends Command
             '',
         ]);
 
-        $logger = new ConsoleOutputLogger($output, LogLevel::DEBUG);
+        $logger = new ConsoleOutputLogger($output, !$input->getOption('no-colors'));
         $optimizer = new Opti($logger);
 
         $configFile = $input->getOption('config');

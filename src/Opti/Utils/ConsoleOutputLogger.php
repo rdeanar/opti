@@ -16,56 +16,78 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ConsoleOutputLogger extends AbstractLogger
 {
     private $output;
-    private $traceLevel;
-    private $traceAllowed = [];
+    private $color;
 
     /**
      * Logger constructor.
      *
      * @param OutputInterface $output
-     * @param string $traceLevel
+     * @param bool $color
      */
-    public function __construct(&$output, $traceLevel = LogLevel::ERROR)
+    public function __construct(&$output, $color = true)
     {
         $this->output = $output;
-        $this->traceLevel = $traceLevel;
+        $this->color = $color;
+    }
 
-        $this->calculateAllowed($traceLevel);
+    /**
+     * @param string $logLevel
+     *
+     * @return int
+     */
+    private function getMessageVerbosity($logLevel)
+    {
+        $verbose = [
+            LogLevel::EMERGENCY => OutputInterface::VERBOSITY_NORMAL,
+            LogLevel::ALERT     => OutputInterface::VERBOSITY_NORMAL,
+            LogLevel::CRITICAL  => OutputInterface::VERBOSITY_NORMAL,
+            LogLevel::ERROR     => OutputInterface::VERBOSITY_NORMAL,
+            LogLevel::WARNING   => OutputInterface::VERBOSITY_VERBOSE,
+            LogLevel::NOTICE    => OutputInterface::VERBOSITY_VERBOSE,
+            LogLevel::INFO      => OutputInterface::VERBOSITY_VERY_VERBOSE,
+            LogLevel::DEBUG     => OutputInterface::VERBOSITY_DEBUG,
+        ];
+
+        return array_key_exists($logLevel, $verbose) ? $verbose[$logLevel] : OutputInterface::VERBOSITY_NORMAL;
     }
 
 
-    private function calculateAllowed($traceLevelMax)
+    private function paintLevel($message, $level)
     {
-        $levels = [
-            LogLevel::EMERGENCY,
-            LogLevel::ALERT,
-            LogLevel::CRITICAL,
-            LogLevel::ERROR,
-            LogLevel::WARNING,
-            LogLevel::NOTICE,
-            LogLevel::INFO,
-            LogLevel::DEBUG,
-        ];
-
-        foreach ($levels as $level) {
-            array_push($this->traceAllowed, $level);
-
-            if ($level == $traceLevelMax) {
-                break;
-            }
+        if (!$this->color) {
+            return $message;
         }
 
+        switch ($level) {
+            case LogLevel::EMERGENCY:
+            case LogLevel::ALERT:
+            case LogLevel::CRITICAL:
+            case LogLevel::ERROR:
+                return '<fg=red>' . $message . '</>';
+                break;
+            case LogLevel::WARNING:
+                return '<fg=yellow>' . $message . '</>';
+                break;
+            case LogLevel::NOTICE:
+                return '<fg=blue>' . $message . '</>';
+                break;
+            case LogLevel::INFO:
+                return '<fg=cyan>' . $message . '</>';
+                break;
+            case LogLevel::DEBUG:
+                return '<fg=green>' . $message . '</>';
+                break;
+        }
+
+        return $message;
     }
 
     public function log($level, $message, array $context = array())
     {
-        if (!in_array($level, $this->traceAllowed)) {
-            return;
-        }
+        $verbosity = $this->getMessageVerbosity($level);
 
-        // TODO paint $level
-        $message = '[ ' . strtoupper($level) . ' ] ' . $message;
+        $message = '[ ' . $this->paintLevel(strtoupper($level), $level) . ' ] ' . $message;
 
-        $this->output->writeln($message);
+        $this->output->writeln($message, $verbosity);
     }
 }
