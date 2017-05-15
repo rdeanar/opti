@@ -56,7 +56,7 @@ abstract class BaseTool
 
         $command = $this->buildCommand($options, $arguments);
 
-        $this->logger->info('Run command: ' . $command);
+        $this->logger->debug('Run command: ' . $command);
 
         $process = new Process($command);
         $process->run();
@@ -80,6 +80,8 @@ abstract class BaseTool
         if (is_array($options)) {
             $options = implode(' ', $options);
         }
+
+        $arguments = array_map('escapeshellarg', $arguments);
 
         $replacements = array_merge(
             ['options' => $options],
