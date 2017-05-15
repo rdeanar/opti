@@ -15,6 +15,7 @@ class ScenarioRunner
 {
     protected $logger;
     protected $tools;
+    protected $format;
 
     protected $inputFilePath;
 
@@ -22,13 +23,15 @@ class ScenarioRunner
      * Scenario constructor.
      *
      * @param LoggerInterface $logger
+     * @param string $format detected input format
      * @param array $tools
      * @param string $inputFilePath
      */
-    public function __construct(LoggerInterface &$logger, $tools, $inputFilePath)
+    public function __construct(LoggerInterface &$logger, &$tools, $format, $inputFilePath)
     {
         $this->logger = $logger;
         $this->tools = $tools;
+        $this->format = $format;
         $this->inputFilePath = $inputFilePath;
     }
 
@@ -67,7 +70,7 @@ class ScenarioRunner
                 $step->fromPrevStep($prevStep);
             }
 
-            $step->run();
+            $step->run($this->format);
 
             $prevStep = $step;
 

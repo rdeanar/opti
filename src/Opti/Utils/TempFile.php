@@ -13,7 +13,7 @@ class TempFile
 {
     public static $files = [];
 
-    public static function getTempFilePath()
+    public static function getTempFilePath($ext = null)
     {
         $dir = '/dev/shm';
         if (!is_dir($dir)) {
@@ -21,6 +21,10 @@ class TempFile
         }
 
         $path = tempnam($dir, 'Opti_');
+
+        if (!empty($ext)) {
+            $path .= '.' . strtolower($ext);
+        }
 
         array_push(self::$files, $path);
 

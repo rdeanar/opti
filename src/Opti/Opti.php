@@ -18,6 +18,7 @@ class Opti
 {
     const FORMAT_JPEG = 'JPEG';
     const FORMAT_PNG = 'PNG';
+    const FORMAT_SVG = 'SVG';
 
     protected $tools = [];
 
@@ -179,11 +180,11 @@ class Opti
             $this->logger->info('Format detected: ' . $format);
 
             if (!$this->isFormatRegistered($format)) {
-                $this->logger->error('No tool registered for this format. Skip.');
+                $this->logger->error('No tool registered for ' . $format . ' format. Skip.');
                 return;
             }
 
-            $runner = new ScenarioRunner($this->logger, $this->tools, $sourceFilePath);
+            $runner = new ScenarioRunner($this->logger, $this->tools, $format, $sourceFilePath);
 
             /** @var null|Step $mostEffectiveStep */
             $mostEffectiveStep = null;

@@ -131,16 +131,16 @@ class Step
         return $this->outputFileSize;
     }
 
-    public function run()
+    public function run($format = null)
     {
         // Prepare
         if (!$this->isVirtual()) {
-            $this->outpuFilePath = TempFile::getTempFilePath();
+            $this->outpuFilePath = TempFile::getTempFilePath($format);
         }
 
         // Process
         if ($this->virtualInput != $this->isVirtual() && $this->virtualInput) {
-            $this->inputFilePath = TempFile::getTempFilePath();
+            $this->inputFilePath = TempFile::getTempFilePath($format);
             file_put_contents($this->inputFilePath, $this->inputFile);
         }
 
