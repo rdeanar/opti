@@ -7,6 +7,14 @@ opti:
     JPEG:
       - convert:jpeg85, convert:default
       - jpegoptim:jpeg85
+#      - guetzli:default
+    PNG:
+      - pngquant:default
+      - optipng:default
+      - pngquant:default, optipng:default
+    SVG:
+      - svgo:default
+      - svgcleaner:default
 #  options:
 #    jpegoptim:jpeg35:
 #      - "-m35"
@@ -31,4 +39,46 @@ opti:
           - '-p'
           - '-s'
           - '-m85'
+    guetzli: # https://github.com/google/guetzli
+      bin: guetzli
+      template: '{options} {input} {output}'
+      configs:
+        default:
+          - '--quality 85'
+    pngquant: # https://pngquant.org/
+      bin: pngquant
+      template: '{options} --output {output} -- {input}'
+      configs:
+        default:
+          - '--force'
+          - '--quality=60-90'
+          - '--strip'
+          - '--skip-if-larger'
+          - '--speed 1'
+    optipng: # http://optipng.sourceforge.net/
+      bin: optipng
+      template: '{options} -out {output} {input}'
+      configs:
+        default:
+          - '-clobber'
+          - '-fix'
+          - '-o 7'
+          - '-strip all'
+          - '-quiet'
+    svgo: # https://github.com/svg/svgo
+      bin: svgo
+      template: '{options} --output={output} --input={input}'
+      configs:
+        default:
+          - '--multipass'
+          - '--quiet'
+          - '--precision=5'
+    svgcleaner: # https://github.com/RazrFalcon/svgcleaner
+      bin: svgcleaner
+      template: '{options} {input} {output}'
+      configs:
+        default:
+          - '--paths-coordinates-precision=5'
+          - '--join-arcto-flags=true'
+
 
