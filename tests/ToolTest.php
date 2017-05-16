@@ -67,7 +67,7 @@ class ToolTest extends TestCase
 
         $command = $tool->buildCommand($config['configs']['default'], ['path' => '~/']);
 
-        $this->assertEquals('ls -lah ~/', $command);
+        $this->assertEquals('ls -lah \'~/\'', $command);
     }
 
 
