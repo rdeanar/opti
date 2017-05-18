@@ -155,6 +155,12 @@ class Step
             );
 
             $this->outputFileSize = filesize($this->outpuFilePath);
+
+            if ($this->outputFileSize == 0) {
+                $this->outpuFilePath = $this->inputFilePath;
+                $this->outputFileSize = $this->inputFileSize;
+            }
+
         } else {
             throw new \Exception('Pipe is not implemented yet');
         }
