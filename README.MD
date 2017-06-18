@@ -11,6 +11,9 @@ PHP component for image optimization which uses various chains of tools and dete
 Or with glob
 `./bin/opti optimize data/*.jpg`
 
+Or using stdin\stdout
+`cat original.svg | ./bin/opti optimize data/*.jpg > optimized.svg`
+
 Or maybe just files modified within the hour
 `find ./data/t/ -newermt $(date +%Y-%m-%d -d '1 hour ago') -type f | xargs php ./bin/opti optimize`
 `find ./data/t/ -newerct '1 hour ago' -type f |  -type f | xargs php ./bin/opti optimize`
@@ -61,9 +64,10 @@ Install on Mac OS
 * More tests
 * More tools
 * ~~Move internal configurations to file~~ DONE
-* ~~Command option for setting log level~~
-* ~~Ability to read external config file~~
-* ~~Allow to register new tools on the fly~~
+* ~~Command option for setting log level~~ DONE
+* ~~Ability to read external config file~~ DONE
+* ~~Allow to register new tools on the fly~~ DONE
+* ~~Read from stdin, output to stdout~~ DONE
 * Config lint command https://symfony.com/doc/current/components/yaml.html#syntax-validation
 * Dummy config create command
 * Tool options replacements, i.e. {quality}
@@ -72,6 +76,7 @@ Install on Mac OS
 * Tinypng web service integration
 * Dry-run mode
 * Installed tool detection command
+* Batch optimize statistics
 * ...
 
 

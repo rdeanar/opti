@@ -9,7 +9,7 @@ use Opti\Tools\ConfigurableTool;
 use Opti\Tools\Convert;
 use Opti\Tools\Identify;
 use Opti\Tools\Jpegoptim;
-use Opti\Utils\TempFile;
+use Opti\Utils\File;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
@@ -166,7 +166,45 @@ class Opti
         }
     }
 
-    public function process($sourceFilePath)
+
+    /**
+     * Optimize file by its content.
+     * Returns `null` if file can not be shrinked, `false` if can not determine its type or optimized contend otherwise.
+     *
+     * @param string $content File content
+     *
+     * @return bool|null|string
+     * @throws \Exception
+     */
+    public function processContent($content)
+    {
+        if (mb_strlen($content) == 0) {
+            throw new \Exception('Empty content');
+        }
+
+        $ext = File::getStreamFileExtension($content);
+
+        if (!$ext) {
+            return false;
+        }
+
+        $filePath = File::getTempFilePath($ext);
+
+        file_put_contents($filePath, $content);
+
+        return $this->processFile($filePath, true);
+    }
+
+    /**
+     * If `$return` if `false`, method returns nothing.
+     * Otherwise it returns optimized file content. If image can not be shrinked returns `null`
+     *
+     * @param string $sourceFilePath
+     * @param bool $return
+     *
+     * @return null|string|void
+     */
+    public function processFile($sourceFilePath, $return = false)
     {
         try {
             $startTime = microtime(true);
@@ -177,7 +215,7 @@ class Opti
                 return;
             }
 
-            $this->logger->info('Format detected: ' . $format);
+            $this->logger->info('Format detected: ' . $format . ' for file: ' . $sourceFilePath);
 
             if (!$this->isFormatRegistered($format)) {
                 $this->logger->error('No tool registered for ' . $format . ' format. Skip.');
@@ -212,13 +250,22 @@ class Opti
 
             if ($sourceFileSize > $destFileSize) {
                 $this->logger->alert('File ' . $sourceFilePath . ' reduced: ' . $sourceFileSize . ' -> ' . $destFileSize . ' ' . (round(100 * $destFileSize / $sourceFileSize, 2)) . '% in ' . $duration . 's');
-                copy($mostEffectiveStep->getOutputPath(), $sourceFilePath);
+
+                if ($return) {
+                    return $mostEffectiveStep->getOutput();
+                } else {
+                    copy($mostEffectiveStep->getOutputPath(), $sourceFilePath);
+                }
             } else {
-                $this->logger->alert('File ' . $sourceFilePath . ' can not be reduced.');
+                if ($return) {
+                    return null;
+                } else {
+                    $this->logger->alert('File ' . $sourceFilePath . ' can not be reduced.');
+                }
             }
 
         } finally {
-            TempFile::clearAll();
+            File::clearAll();
         }
     }
 

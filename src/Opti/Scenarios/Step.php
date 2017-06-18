@@ -10,7 +10,7 @@ namespace Opti\Scenarios;
 
 
 use Opti\Tools\BaseTool;
-use Opti\Utils\TempFile;
+use Opti\Utils\File;
 use Psr\Log\LoggerInterface;
 
 class Step
@@ -118,6 +118,9 @@ class Step
 
     public function getOutput()
     {
+        if (empty($this->outpuFile) && is_file($this->outpuFilePath)) {
+            $this->outpuFile = file_get_contents($this->outpuFilePath);
+        }
         return $this->outpuFile;
     }
 
@@ -135,12 +138,12 @@ class Step
     {
         // Prepare
         if (!$this->isVirtual()) {
-            $this->outpuFilePath = TempFile::getTempFilePath($format);
+            $this->outpuFilePath = File::getTempFilePath($format);
         }
 
         // Process
         if ($this->virtualInput != $this->isVirtual() && $this->virtualInput) {
-            $this->inputFilePath = TempFile::getTempFilePath($format);
+            $this->inputFilePath = File::getTempFilePath($format);
             file_put_contents($this->inputFilePath, $this->inputFile);
         }
 

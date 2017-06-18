@@ -39,19 +39,28 @@ class OptimizeCommand extends Command
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug.'),
                 new InputOption('no-colors', '', InputOption::VALUE_NONE, 'Force no colors in output'),
 
-                new InputArgument('files', InputArgument::IS_ARRAY | InputArgument::REQUIRED),
+                new InputArgument('files', InputArgument::IS_ARRAY | InputArgument::OPTIONAL),
             ])
         );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // outputs multiple lines to the console (adding "\n" at the end of each line)
-        $output->writeln([
-            'Optimize images',
-            '============',
-            '',
-        ]);
+        $files = $input->getArgument('files');
+        $inputFileContent = '';
+
+        if (empty($files)) {
+            if (0 === ftell(STDIN)) {
+                while (!feof(STDIN)) {
+                    $inputFileContent .= fread(STDIN, 1024);
+                }
+                if (empty($inputFileContent)) {
+                    throw new \RuntimeException("Content from STDIN is empty.");
+                }
+            } else {
+                throw new \RuntimeException("Please provide a filename or pipe template content to STDIN.");
+            }
+        }
 
         $logger = new ConsoleOutputLogger($output, !$input->getOption('no-colors'));
         $optimizer = new Opti($logger);
@@ -62,15 +71,28 @@ class OptimizeCommand extends Command
             $optimizer->configureFromFile($configFile);
         }
 
-        foreach ($input->getArgument('files') as $path) {
-            $optimizer->process($path);
-//            $output->writeln($result);
+
+        if (!empty($files)) {
+
+            $output->writeln([
+                'Optimize images',
+                '===============',
+                '',
+            ]);
+
+            foreach ($input->getArgument('files') as $path) {
+                $optimizer->processFile($path);
+            }
+        } else {
+            $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
+
+            $outputFileContent = $optimizer->processContent($inputFileContent);
+
+            $result = fputs(STDOUT, empty($outputFileContent) ? $inputFileContent : $outputFileContent);
+
+            if (!$result) {
+                fputs(STDERR, 'Unable to write to stdout.');
+            }
         }
-
-
-//        var_export($input->getArguments());
-//        var_export($input->getOptions());
-
-        //$output->writeln('Username: ' . $input->getArgument('username'));
     }
 }

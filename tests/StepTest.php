@@ -32,7 +32,9 @@ class StepTest extends TestCase
     {
         $step = $this->getStep();
 
-        $step->fromFile(__DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR . 'Definition_of_Free_Cultural_Works_logo_notext.png');
+        $filePath = $this->getFilePathFromDataDirectory('images' . DIRECTORY_SEPARATOR . 'Definition_of_Free_Cultural_Works_logo_notext.png');
+
+        $step->fromFile($filePath);
 
         $this->assertNotEmpty($step->getInputSize());
     }
