@@ -196,7 +196,7 @@ class Opti
     }
 
     /**
-     * If `$return` if `false`, method returns nothing.
+     * If `$return` is `false`, method returns nothing.
      * Otherwise it returns optimized file content. If image can not be shrinked returns `null`
      *
      * @param string $sourceFilePath
@@ -211,8 +211,16 @@ class Opti
             try {
                 $format = $this->getTool('identify')->run('default', ['input' => $sourceFilePath]);
             } catch (\Symfony\Component\Process\Exception\ProcessFailedException $e) {
-                $this->logger->error('Can not determinate image format in file: ' . $sourceFilePath . ' Skip.');
-                return;
+
+                $this->logger->alert('Can not determinate image format in file: ' . $sourceFilePath . '. Trying to check for SVG.');
+
+                $content = file_get_contents($sourceFilePath);
+                if (strpos($content, '</svg>') !== false) {
+                    $format = 'SVG';
+                } else {
+                    $this->logger->error('Can not determinate image format in file: ' . $sourceFilePath . ' Skip.');
+                    return;
+                }
             }
 
             $this->logger->info('Format detected: ' . $format . ' for file: ' . $sourceFilePath);
