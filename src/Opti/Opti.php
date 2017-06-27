@@ -208,6 +208,12 @@ class Opti
     {
         try {
             $startTime = microtime(true);
+
+            if (!file_exists($sourceFilePath)) {
+                $this->logger->error('File not exists: ' . $sourceFilePath);
+                return;
+            }
+
             try {
                 $format = $this->getTool('identify')->run('default', ['input' => $sourceFilePath]);
             } catch (\Symfony\Component\Process\Exception\ProcessFailedException $e) {
