@@ -12,6 +12,7 @@ namespace Opti\Scenarios;
 use Opti\Tools\BaseTool;
 use Opti\Utils\File;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class Step
 {
@@ -149,17 +150,24 @@ class Step
 
         if (!$this->isVirtual()) {
 
-            $this->tool->run(
-                $this->config,
-                [
-                    'input'  => $this->inputFilePath,
-                    'output' => $this->outpuFilePath,
-                ]
-            );
+            try {
+                $this->tool->run(
+                    $this->config,
+                    [
+                        'input'  => $this->inputFilePath,
+                        'output' => $this->outpuFilePath,
+                    ]
+                );
 
-            $this->outputFileSize = filesize($this->outpuFilePath);
+                $this->outputFileSize = filesize($this->outpuFilePath);
+
+            } catch (ProcessFailedException $e) {
+                $this->logger->debug($e->getMessage());
+                $this->outputFileSize = 0;
+            }
 
             if ($this->outputFileSize == 0) {
+                $this->logger->debug('Error while processing file. Use input file as output.');
                 $this->outpuFilePath = $this->inputFilePath;
                 $this->outputFileSize = $this->inputFileSize;
             }

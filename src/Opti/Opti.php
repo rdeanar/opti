@@ -218,7 +218,7 @@ class Opti
             $this->logger->info('Format detected: ' . $format . ' for file: ' . $sourceFilePath);
 
             if (!$this->isFormatRegistered($format)) {
-                $this->logger->error('No tool registered for ' . $format . ' format. Skip.');
+                $this->logger->error('No tool registered for ' . $format . ' format. File: ' . $sourceFilePath . '. Skip.');
                 return;
             }
 
