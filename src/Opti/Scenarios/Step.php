@@ -159,7 +159,11 @@ class Step
                     ]
                 );
 
-                $this->outputFileSize = filesize($this->outpuFilePath);
+                if (file_exists($this->outpuFilePath)) {
+                    $this->outputFileSize = filesize($this->outpuFilePath);
+                } else {
+                    $this->outputFileSize = 0;
+                }
 
             } catch (ProcessFailedException $e) {
                 $this->logger->debug($e->getMessage());
@@ -167,7 +171,7 @@ class Step
             }
 
             if ($this->outputFileSize == 0) {
-                $this->logger->debug('Error while processing file. Use input file as output.');
+                $this->logger->debug('Error while processing file. Maybe it can not be shrinked? Use input file as output.');
                 $this->outpuFilePath = $this->inputFilePath;
                 $this->outputFileSize = $this->inputFileSize;
             }
