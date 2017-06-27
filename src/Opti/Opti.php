@@ -216,7 +216,7 @@ class Opti
 
                 $content = file_get_contents($sourceFilePath);
                 if (strpos($content, '</svg>') !== false) {
-                    $format = 'SVG';
+                    $format = self::FORMAT_SVG;
                 } else {
                     $this->logger->error('Can not determinate image format in file: ' . $sourceFilePath . ' Skip.');
                     return;
@@ -230,7 +230,16 @@ class Opti
                 return;
             }
 
-            $runner = new ScenarioRunner($this->logger, $this->tools, $format, $sourceFilePath);
+
+            if (empty(pathinfo($sourceFilePath, PATHINFO_EXTENSION)) && $format == self::FORMAT_SVG) {
+                $this->logger->info('Create temp file for SVG without extension.');
+                $filePathToProcess = File::getTempFilePath('svg');
+                copy($sourceFilePath, $filePathToProcess);
+            } else {
+                $filePathToProcess = $sourceFilePath;
+            }
+
+            $runner = new ScenarioRunner($this->logger, $this->tools, $format, $filePathToProcess);
 
             /** @var null|Step $mostEffectiveStep */
             $mostEffectiveStep = null;
@@ -239,7 +248,7 @@ class Opti
                 if (is_null($currentScenarioStep)) {
                     continue;
                 }
-                if (is_null($mostEffectiveStep) OR $mostEffectiveStep->getOutputSize() > $currentScenarioStep->getOutputSize()) {
+                if (is_null($mostEffectiveStep) || $mostEffectiveStep->getOutputSize() > $currentScenarioStep->getOutputSize()) {
                     $mostEffectiveStep = $currentScenarioStep;
                 }
             }
