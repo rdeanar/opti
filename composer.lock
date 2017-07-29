@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6706cb7fdbc62729a5cf03e1cfb501ac",
-    "content-hash": "d0a423635054b17034c08ddca2750768",
+    "content-hash": "bcf4a09e8d5be975354db7ccc1233f8b",
     "packages": [
         {
             "name": "dflydev/apache-mime-types",
@@ -60,7 +59,7 @@
                 "mime",
                 "mimetypes"
             ],
-            "time": "2014-02-21 21:07:58"
+            "time": "2014-02-21T21:07:58+00:00"
         },
         {
             "name": "psr/log",
@@ -107,7 +106,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2016-10-10 12:19:37"
+            "time": "2016-10-10T12:19:37+00:00"
         },
         {
             "name": "symfony/console",
@@ -175,7 +174,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2017-04-19 23:40:30"
+            "time": "2017-04-19T23:40:30+00:00"
         },
         {
             "name": "symfony/debug",
@@ -231,7 +230,56 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "time": "2017-04-20 17:12:40"
+            "time": "2017-04-20T17:12:40+00:00"
+        },
+        {
+            "name": "symfony/finder",
+            "version": "3.4.x-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/finder.git",
+                "reference": "295fa37f13dbc4bba200680d2f4ae2c4a1f77709"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/295fa37f13dbc4bba200680d2f4ae2c4a1f77709",
+                "reference": "295fa37f13dbc4bba200680d2f4ae2c4a1f77709",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.4-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Finder\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Finder Component",
+            "homepage": "https://symfony.com",
+            "time": "2017-06-01T21:02:15+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -290,7 +338,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-11-14 01:06:16"
+            "time": "2016-11-14T01:06:16+00:00"
         },
         {
             "name": "symfony/process",
@@ -339,7 +387,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2017-04-12 14:14:56"
+            "time": "2017-04-12T14:14:56+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -394,13 +442,15 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2017-04-12 20:43:31"
+            "time": "2017-04-12T20:43:31+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "symfony/finder": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

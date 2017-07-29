@@ -14,7 +14,8 @@
     "symfony/process": "^2.7 || ^3.0",
     "symfony/yaml": "^2.7 || ^3.0",
     "psr/log": "^1.0",
-    "dflydev/apache-mime-types": "^1.0"
+    "dflydev/apache-mime-types": "^1.0",
+    "symfony/finder": "3.4.x-dev"
   },
   "autoload": {
     "psr-4": {

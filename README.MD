@@ -71,7 +71,7 @@ Install on Mac OS
 * Config lint command https://symfony.com/doc/current/components/yaml.html#syntax-validation
 * Dummy config create command
 * Tool options replacements, i.e. {quality}
-* Build Phar file
+* ~~Build Phar file~~
 * Output dir option
 * Tinypng web service integration
 * Dry-run mode

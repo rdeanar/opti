@@ -35,7 +35,7 @@ class Application extends BaseApplication
             });
         }
 
-        parent::__construct('Composer', '0.0.1');
+        parent::__construct('Opti', '0.0.1');
     }
 
     /**
