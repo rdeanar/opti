@@ -12,7 +12,7 @@ Or with glob
 `./bin/opti optimize data/*.jpg`
 
 Or using stdin\stdout
-`cat original.svg | ./bin/opti optimize data/*.jpg > optimized.svg`
+`cat original.svg | ./bin/opti optimize > optimized.svg`
 
 Or maybe just files modified within the hour
 `find ./data/t/ -newermt $(date +%Y-%m-%d -d '1 hour ago') -type f | xargs php ./bin/opti optimize`

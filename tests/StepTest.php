@@ -2,6 +2,7 @@
 
 namespace Opti\tests;
 
+use Opti\File\File;
 use Opti\Scenarios\Step;
 
 class StepTest extends TestCase
@@ -34,8 +35,13 @@ class StepTest extends TestCase
 
         $filePath = $this->getFilePathFromDataDirectory('images' . DIRECTORY_SEPARATOR . 'Definition_of_Free_Cultural_Works_logo_notext.png');
 
-        $step->fromFile($filePath);
+        $file = new File($filePath);
 
-        $this->assertNotEmpty($step->getInputSize());
+        $step->fromFile($file);
+
+        $input = $step->getInput();
+
+        $this->assertNotEmpty($input->getPath());
+        $this->assertFileExists($input->getPath());
     }
 }

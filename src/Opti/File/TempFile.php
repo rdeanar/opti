@@ -6,11 +6,14 @@
  * Time: 23:56
  */
 
-namespace Opti\Utils;
+namespace Opti\File;
 
 
-class File
+class TempFile
 {
+    /**
+     * @var array of all created temp files
+     */
     public static $temp_files = [];
 
     /**
@@ -29,12 +32,12 @@ class File
         }
 
         $path = tempnam($dir, 'Opti_');
+        array_push(self::$temp_files, $path);
 
         if (!empty($ext)) {
             $path .= '.' . strtolower($ext);
+            array_push(self::$temp_files, $path);
         }
-
-        array_push(self::$temp_files, $path);
 
         return $path;
     }
@@ -88,5 +91,28 @@ class File
 
             return empty($extensions) ? false : array_shift($extensions);
         }
+    }
+
+
+    /**
+     * @param null|string $ext
+     * @param null|string $content
+     *
+     * @return File
+     */
+    public static function create($ext = null, $content = null)
+    {
+        if (is_null($ext) && !is_null($content)) {
+            $ext = self::getStreamFileExtension($content);
+        }
+
+        $path = self::getTempFilePath($ext);
+
+        $file = new File($path);
+        if (!is_null($content)) {
+            $file->setContent($content, true);
+        }
+
+        return $file;
     }
 }

@@ -9,30 +9,28 @@
 namespace Opti\Scenarios;
 
 
+use Opti\File\File;
 use Psr\Log\LoggerInterface;
 
 class ScenarioRunner
 {
     protected $logger;
     protected $tools;
-    protected $format;
 
-    protected $inputFilePath;
+    protected $file;
 
     /**
      * Scenario constructor.
      *
      * @param LoggerInterface $logger
-     * @param string $format detected input format
      * @param array $tools
-     * @param string $inputFilePath
+     * @param File $file
      */
-    public function __construct(LoggerInterface &$logger, &$tools, $format, $inputFilePath)
+    public function __construct(LoggerInterface &$logger, &$tools, $file)
     {
         $this->logger = $logger;
         $this->tools = $tools;
-        $this->format = $format;
-        $this->inputFilePath = $inputFilePath;
+        $this->file = $file;
     }
 
 
@@ -65,12 +63,12 @@ class ScenarioRunner
 
             $step = new Step($this->logger, $this->tools[$toolName], $configName);
             if (is_null($prevStep)) {
-                $step->fromFile($this->inputFilePath);
+                $step->fromFile($this->file);
             } else {
                 $step->fromPrevStep($prevStep);
             }
 
-            $step->run($this->format);
+            $step->run();
 
             $prevStep = $step;
 

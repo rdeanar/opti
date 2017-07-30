@@ -9,8 +9,9 @@
 namespace Opti\Scenarios;
 
 
+use Opti\File\File;
 use Opti\Tools\BaseTool;
-use Opti\Utils\File;
+use Opti\File\TempFile;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
@@ -19,57 +20,32 @@ class Step
     /**
      * @var LoggerInterface
      */
-    private $logger;
+    protected $logger;
 
     /**
      * @var BaseTool
      */
-    private $tool;
+    protected $tool;
 
     /**
      * @var string
      */
-    private $configName;
+    protected $configName;
 
     /**
      * @var array
      */
-    private $config;
+    protected $config;
 
     /**
-     * @var boolean
+     * @var File
      */
-    private $virtualInput;
+    protected $inputFile;
 
     /**
-     * @var string
+     * @var File
      */
-    private $inputFilePath;
-
-    /**
-     * @var string Content of file
-     */
-    private $inputFile;
-
-    /**
-     * @var integer
-     */
-    private $inputFileSize;
-
-    /**
-     * @var string
-     */
-    private $outpuFilePath;
-
-    /**
-     * @var string Content of file
-     */
-    private $outpuFile;
-
-    /**
-     * @var integer
-     */
-    private $outputFileSize;
+    protected $outputFile;
 
     /**
      * Step constructor.
@@ -86,98 +62,74 @@ class Step
         $this->config = $this->tool->configs[$configName];
     }
 
-    public function fromFile($path)
+    /**
+     * Configure via File object
+     *
+     * @param $file
+     */
+    public function fromFile($file)
     {
-        $this->inputFilePath = $path;
-        $this->inputFileSize = filesize($path);
-        $this->virtualInput = false;
+        $this->inputFile = $file;
     }
 
+    /**
+     * Configure vie previous step
+     *
+     * @param Step $step
+     */
     public function fromPrevStep(Step $step)
     {
-        if ($step->isVirtual()) {
-            $this->inputFile = $step->getOutput();
-            $this->virtualInput = true;
-        } else {
-            // Maybe check if Tool can save to separate file and copy it
-            $this->inputFilePath = $step->getOutputPath();
-            $this->virtualInput = false;
-        }
-
-        $this->inputFileSize = $step->outputFileSize;
+        $this->inputFile = &$step->outputFile;
     }
 
-    public function isVirtual()
+    /**
+     * @return File input file object
+     */
+    public function getInput()
     {
-        return $this->tool->allowPipe;
+        return $this->inputFile;
     }
 
-    public function getOutputPath()
-    {
-        return $this->outpuFilePath;
-    }
-
+    /**
+     * @return File result file object
+     */
     public function getOutput()
     {
-        if (empty($this->outpuFile) && is_file($this->outpuFilePath)) {
-            $this->outpuFile = file_get_contents($this->outpuFilePath);
-        }
-        return $this->outpuFile;
+        return $this->outputFile;
     }
 
-    public function getInputSize()
-    {
-        return $this->inputFileSize;
-    }
-
+    /**
+     * @return int size of result file
+     */
     public function getOutputSize()
     {
-        return $this->outputFileSize;
+        return $this->outputFile->getSize();
     }
 
-    public function run($format = null)
+
+    public function run()
     {
         // Prepare
-        if (!$this->isVirtual()) {
-            $this->outpuFilePath = File::getTempFilePath($format);
+        $this->outputFile = TempFile::create($this->inputFile->getFormat());
+
+        $error = false;
+        try {
+            $this->tool->run(
+                $this->config,
+                [
+                    'input'  => $this->inputFile->getPath(),
+                    'output' => $this->outputFile->getPath(),
+                ]
+            );
+
+        } catch (ProcessFailedException $e) {
+            $this->logger->debug($e->getMessage());
+            $error = true;
         }
 
-        // Process
-        if ($this->virtualInput != $this->isVirtual() && $this->virtualInput) {
-            $this->inputFilePath = File::getTempFilePath($format);
-            file_put_contents($this->inputFilePath, $this->inputFile);
-        }
-
-        if (!$this->isVirtual()) {
-
-            try {
-                $this->tool->run(
-                    $this->config,
-                    [
-                        'input'  => $this->inputFilePath,
-                        'output' => $this->outpuFilePath,
-                    ]
-                );
-
-                if (file_exists($this->outpuFilePath)) {
-                    $this->outputFileSize = filesize($this->outpuFilePath);
-                } else {
-                    $this->outputFileSize = 0;
-                }
-
-            } catch (ProcessFailedException $e) {
-                $this->logger->debug($e->getMessage());
-                $this->outputFileSize = 0;
-            }
-
-            if ($this->outputFileSize == 0) {
-                $this->logger->debug('Error while processing file. Maybe it can not be shrinked? Use input file as output.');
-                $this->outpuFilePath = $this->inputFilePath;
-                $this->outputFileSize = $this->inputFileSize;
-            }
-
-        } else {
-            throw new \Exception('Pipe is not implemented yet');
+        if ($error || $this->outputFile->getSize(true) == 0) {
+            $this->logger->debug('Error while processing file. Maybe it can not be shrinked? Used input file as output.');
+            $this->outputFile = &$this->inputFile;
         }
     }
 }

@@ -2,24 +2,22 @@
 
 namespace Opti;
 
+use Opti\File\File;
 use Opti\Scenarios\ScenarioRunner;
 use Opti\Scenarios\Step;
 use Opti\Tools\BaseTool;
 use Opti\Tools\ConfigurableTool;
-use Opti\Tools\Convert;
 use Opti\Tools\Identify;
-use Opti\Tools\Jpegoptim;
-use Opti\Utils\File;
+use Opti\File\TempFile;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 class Opti
 {
-    const FORMAT_JPEG = 'JPEG';
-    const FORMAT_PNG = 'PNG';
-    const FORMAT_SVG = 'SVG';
-
+    /**
+     * @var array Registered tools
+     */
     protected $tools = [];
 
     /**
@@ -27,6 +25,9 @@ class Opti
      */
     protected $logger;
 
+    /**
+     * @var array Registered scenarios for formats
+     */
     protected $scenarios = [];
 
     /**
@@ -50,6 +51,9 @@ class Opti
         return $this->scenarios;
     }
 
+    /**
+     * Init predefined tools
+     */
     protected function initTools()
     {
         $this->addTool('identify', Identify::class);
@@ -182,51 +186,47 @@ class Opti
             throw new \Exception('Empty content');
         }
 
-        $ext = File::getStreamFileExtension($content);
+        $file = TempFile::create(null, $content);
 
-        if (!$ext) {
+        if (empty($file->getFormat())) {
+            TempFile::clearAll();
             return false;
         }
 
-        $filePath = File::getTempFilePath($ext);
-
-        file_put_contents($filePath, $content);
-
-        return $this->processFile($filePath, true);
+        return $this->processFile($file, true);
     }
 
     /**
      * If `$return` is `false`, method returns nothing.
      * Otherwise it returns optimized file content. If image can not be shrinked returns `null`
      *
-     * @param string $sourceFilePath
+     * @param string|File $sourceFile
      * @param bool $return
      *
-     * @return null|string|void
+     * @return null|string
      */
-    public function processFile($sourceFilePath, $return = false)
+    public function processFile($sourceFile, $return = false)
     {
         try {
             $startTime = microtime(true);
 
-            if (!file_exists($sourceFilePath)) {
-                $this->logger->error('File not exists: ' . $sourceFilePath);
-                return;
-            }
-
-            try {
-                $format = $this->getTool('identify')->run('default', ['input' => $sourceFilePath]);
-            } catch (\Symfony\Component\Process\Exception\ProcessFailedException $e) {
-
-                $this->logger->alert('Can not determinate image format in file: ' . $sourceFilePath . '. Trying to check for SVG.');
-
-                $content = file_get_contents($sourceFilePath);
-                if (strpos($content, '</svg>') !== false) {
-                    $format = self::FORMAT_SVG;
-                } else {
-                    $this->logger->error('Can not determinate image format in file: ' . $sourceFilePath . ' Skip.');
+            if ($sourceFile instanceof File) {
+                $sourceFilePath = $sourceFile->getSize();
+            } else {
+                if (!file_exists($sourceFile)) {
+                    $this->logger->error('File not exists: ' . $sourceFile);
                     return;
                 }
+
+                $sourceFilePath = $sourceFile;
+                $sourceFile = new File($sourceFilePath);
+            }
+
+            $format = $sourceFile->getFormat();
+
+            if (empty($format)) {
+                $this->logger->error('Can not determinate image format in file: ' . $sourceFilePath . ' Skip.');
+                return;
             }
 
             $this->logger->info('Format detected: ' . $format . ' for file: ' . $sourceFilePath);
@@ -237,15 +237,15 @@ class Opti
             }
 
 
-            if (empty(pathinfo($sourceFilePath, PATHINFO_EXTENSION)) && $format == self::FORMAT_SVG) {
+            // Workaround for svgcleaner tool, which one can not use file without extension
+            if (empty($sourceFile->getExtension()) && $format == File::FORMAT_SVG) {
                 $this->logger->info('Create temp file for SVG without extension.');
-                $filePathToProcess = File::getTempFilePath('svg');
-                copy($sourceFilePath, $filePathToProcess);
+                $fileToProcess = TempFile::create('svg', $sourceFile->getContent());
             } else {
-                $filePathToProcess = $sourceFilePath;
+                $fileToProcess = &$sourceFile;
             }
 
-            $runner = new ScenarioRunner($this->logger, $this->tools, $format, $filePathToProcess);
+            $runner = new ScenarioRunner($this->logger, $this->tools, $fileToProcess);
 
             /** @var null|Step $mostEffectiveStep */
             $mostEffectiveStep = null;
@@ -264,20 +264,20 @@ class Opti
                 return;
             }
 
-            $this->logger->info('Most effective scenario: ' . $mostEffectiveStep->getOutputSize() . ' filePath: ' . $mostEffectiveStep->getOutputPath());
+            $this->logger->info('Most effective scenario: ' . $mostEffectiveStep->getOutputSize()); //TODO print scenario tools:configs
 
-            $sourceFileSize = filesize($sourceFilePath);
+            $sourceFileSize = $sourceFile->getSize();
             $destFileSize = $mostEffectiveStep->getOutputSize();
 
             $duration = round(microtime(true) - $startTime, 3);
 
             if ($sourceFileSize > $destFileSize) {
-                $this->logger->alert('File ' . $sourceFilePath . ' reduced: ' . $sourceFileSize . ' -> ' . $destFileSize . ' ' . (round(100 * $destFileSize / $sourceFileSize, 2)) . '% in ' . $duration . 's');
+                $this->logger->alert('File ' . $sourceFilePath . ' reduced: ' . number_format($sourceFileSize) . ' -> ' . number_format($destFileSize) . ' ' . (round(100 * $destFileSize / $sourceFileSize, 2)) . '% in ' . $duration . 's');
 
                 if ($return) {
-                    return $mostEffectiveStep->getOutput();
+                    return $mostEffectiveStep->getOutput()->getContent();
                 } else {
-                    copy($mostEffectiveStep->getOutputPath(), $sourceFilePath);
+                    copy($mostEffectiveStep->getOutput()->getPath(), $sourceFilePath);
                 }
             } else {
                 if ($return) {
@@ -288,7 +288,7 @@ class Opti
             }
 
         } finally {
-            File::clearAll();
+            TempFile::clearAll();
         }
     }
 

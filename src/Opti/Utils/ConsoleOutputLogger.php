@@ -15,8 +15,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConsoleOutputLogger extends AbstractLogger
 {
-    private $output;
-    private $color;
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+
+    /**
+     * @var bool
+     */
+    protected $color;
 
     /**
      * Logger constructor.
@@ -35,7 +42,7 @@ class ConsoleOutputLogger extends AbstractLogger
      *
      * @return int
      */
-    private function getMessageVerbosity($logLevel)
+    protected function getMessageVerbosity($logLevel)
     {
         $verbose = [
             LogLevel::EMERGENCY => OutputInterface::VERBOSITY_NORMAL,
@@ -52,7 +59,7 @@ class ConsoleOutputLogger extends AbstractLogger
     }
 
 
-    private function paintLevel($message, $level)
+    protected function paintLevel($message, $level)
     {
         if (!$this->color) {
             return $message;
