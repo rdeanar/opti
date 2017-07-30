@@ -61,6 +61,7 @@ Install on Mac OS
 `brew install svgcleaner`
 
 ## TODO
+* Documentation
 * More tests
 * More tools
 * ~~Move internal configurations to file~~ DONE
@@ -71,12 +72,15 @@ Install on Mac OS
 * Config lint command https://symfony.com/doc/current/components/yaml.html#syntax-validation
 * Dummy config create command
 * Tool options replacements, i.e. {quality}
-* ~~Build Phar file~~
+* ~~Build Phar file~~ DONE
 * Output dir option
 * Tinypng web service integration
 * Dry-run mode
 * Installed tool detection command
 * Batch optimize statistics
+* Backup of original files (declare directory)
+* Global settings (maybe in home directory)
+* Install tools command
 * ...
 
 
