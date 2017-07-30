@@ -2,6 +2,7 @@
 
 namespace Opti\tests;
 
+use Opti\File\File;
 use Opti\tests\data\OptiTestClass as Opti;
 
 class OptiTest extends TestCase
@@ -52,7 +53,7 @@ class OptiTest extends TestCase
 
         $config = [
             'scenarios' => [
-                Opti::FORMAT_PNG => [
+                File::FORMAT_PNG => [
                     'test:testconfig',
                 ],
             ],
@@ -70,7 +71,7 @@ class OptiTest extends TestCase
 
         $config = [
             'scenarios+' => [
-                Opti::FORMAT_PNG => [
+                File::FORMAT_PNG => [
                     'test:testconfig',
                 ],
             ],
