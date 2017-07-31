@@ -18,6 +18,41 @@ class OptiTest extends TestCase
         return $opti;
     }
 
+    /**
+     * @return Opti
+     */
+    protected function getOptiConfigured()
+    {
+        $opti = $this->getOpti();
+
+        $config = [
+            'tools'     => [
+                'pngquant' => [
+                    'bin'      => 'pngquant',
+                    'template' => '{options} --output {output} -- {input}',
+                    'configs'  => [
+                        'default' => [
+                            '--force',
+                            '--quality=60-90',
+                            '--strip',
+                            '--skip-if-larger',
+                            '--speed 1',
+                        ],
+                    ],
+                ],
+            ],
+            'scenarios' => [
+                'PNG' => [
+                    'pngquant:default',
+                ],
+            ],
+        ];
+
+        $opti->configure($config);
+
+        return $opti;
+    }
+
     public function testConfigureToolsFromProperty()
     {
         $opti = $this->getOpti();
@@ -120,5 +155,18 @@ class OptiTest extends TestCase
         ];
 
         $this->assertEquals($expectedConfig, $config, 'Config match');
+    }
+
+    public function testOptimize()
+    {
+        $originalFilePath = $this->getFilePathFromDataDirectory('images' . DIRECTORY_SEPARATOR . 'logo.png');
+
+        $opti = $this->getOptiConfigured();
+
+        $fileToProcessPath = $this->copyFileToTempDir($originalFilePath);
+
+        $opti->processFile(new File($fileToProcessPath));
+
+        $this->assertGreaterThan(filesize($fileToProcessPath), filesize($originalFilePath), 'Optimized file size is less than original');
     }
 }
