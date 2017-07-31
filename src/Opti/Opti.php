@@ -209,7 +209,7 @@ class Opti
             $startTime = microtime(true);
 
             if ($sourceFile instanceof File) {
-                $sourceFilePath = $sourceFile->getSize();
+                $sourceFilePath = $sourceFile->getPath();
             } else {
                 if (!file_exists($sourceFile)) {
                     $this->logger->error('File not exists: ' . $sourceFile);
