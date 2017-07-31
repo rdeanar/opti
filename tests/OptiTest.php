@@ -7,15 +7,25 @@ use Opti\tests\data\OptiTestClass as Opti;
 
 class OptiTest extends TestCase
 {
+
+    /**
+     * @var ArrayLogger
+     */
+    protected $logger;
+
+    protected function tearDown()
+    {
+        echo $this->logger->getAllLinesAsString();
+        parent::tearDown();
+    }
+
     /**
      * @return Opti
      */
     protected function getOpti()
     {
-        $logger = new \Psr\Log\NullLogger();
-        $opti = new Opti($logger);
-
-        return $opti;
+        $this->logger = new ArrayLogger();
+        return new Opti($this->logger);
     }
 
     /**
