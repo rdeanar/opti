@@ -40,10 +40,23 @@ class OptiTest extends TestCase
                         ],
                     ],
                 ],
+                'optipng'  => [
+                    'bin'      => 'optipng',
+                    'template' => '{options} -out {output} {input}',
+                    'configs'  => [
+                        'default' => [
+                            '-clobber',
+                            '-fix',
+                            '-o 7',
+                            '-strip all',
+                            '-quiet',
+                        ],
+                    ],
+                ],
             ],
             'scenarios' => [
                 'PNG' => [
-                    'pngquant:default',
+                    'pngquant:default, optipng:default',
                 ],
             ],
         ];

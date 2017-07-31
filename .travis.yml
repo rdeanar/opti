@@ -45,4 +45,3 @@ install:
 
 script:
   - phpunit --verbose
-  - pngquant --version
