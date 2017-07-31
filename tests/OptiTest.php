@@ -44,8 +44,6 @@ class OptiTest extends TestCase
                         'default' => [
                             '--force',
                             '--quality=60-90',
-                            '--strip',
-                            '--skip-if-larger',
                             '--speed 1',
                         ],
                     ],
@@ -55,10 +53,8 @@ class OptiTest extends TestCase
                     'template' => '{options} -out {output} {input}',
                     'configs'  => [
                         'default' => [
-                            '-clobber',
                             '-fix',
                             '-o 7',
-                            '-strip all',
                             '-quiet',
                         ],
                     ],
