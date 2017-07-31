@@ -9,21 +9,19 @@ use Opti\Tools\BaseTool;
 use Opti\Tools\ConfigurableTool;
 use Opti\Tools\Identify;
 use Opti\File\TempFile;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 class Opti
 {
+    use LoggerAwareTrait;
+
     /**
      * @var array Registered tools
      */
     protected $tools = [];
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
 
     /**
      * @var array Registered scenarios for formats
