@@ -15,6 +15,7 @@ class OptiTest extends TestCase
 
     protected function tearDown()
     {
+        echo ' ==> ' . $this->getName() . PHP_EOL;
         echo $this->logger->getAllLinesAsString();
         parent::tearDown();
     }
