@@ -29,6 +29,16 @@ class Opti
     protected $scenarios = [];
 
     /**
+     * Path to file or directory
+     *
+     * In case single file it can be path to save output file
+     * In case batch mode it will be output directory
+     *
+     * @var string
+     */
+    protected $outputTo;
+
+    /**
      * Opti constructor.
      *
      * @param LoggerInterface $logger
@@ -39,6 +49,16 @@ class Opti
         $this->initTools();
 
         $this->configureFromFile(__DIR__ . DIRECTORY_SEPARATOR . 'Data' . DIRECTORY_SEPARATOR . 'config.yml');
+    }
+
+    /**
+     * Returns `true` if [[outputTo]] used
+     *
+     * @return bool
+     */
+    public function isOutputSet()
+    {
+        return !empty($this->outputTo);
     }
 
     /**
@@ -168,6 +188,18 @@ class Opti
         }
     }
 
+    /**
+     * Setter for [[outputTo]]
+     *
+     * @param string $path
+     *
+     * @see outputTo
+     */
+    public function setOutputTo($path)
+    {
+        $this->outputTo = $path;
+    }
+
 
     /**
      * Optimize file by its content.
@@ -273,9 +305,26 @@ class Opti
                 $this->logger->alert('File ' . $sourceFilePath . ' reduced: ' . number_format($sourceFileSize) . ' -> ' . number_format($destFileSize) . ' ' . (round(100 * $destFileSize / $sourceFileSize, 2)) . '% in ' . $duration . 's');
 
                 if ($return) {
-                    return $mostEffectiveStep->getOutput()->getContent();
+                    if (empty($this->outputTo)) {
+                        return $mostEffectiveStep->getOutput()->getContent();
+                    } else {
+                        copy($mostEffectiveStep->getOutput()->getPath(), $this->outputTo);
+                        $this->logger->alert('Saved to ' . $this->outputTo);
+                    }
                 } else {
-                    copy($mostEffectiveStep->getOutput()->getPath(), $sourceFilePath);
+
+                    if (empty($this->outputTo)) {
+                        $saveTo = $sourceFilePath;
+                    } else {
+                        if (is_dir($this->outputTo)) {
+                            $saveTo = $this->outputTo . DIRECTORY_SEPARATOR . basename($sourceFilePath);
+                        } else {
+                            $saveTo = $this->outputTo;
+                        }
+                    }
+
+                    copy($mostEffectiveStep->getOutput()->getPath(), $saveTo);
+                    $this->logger->alert('Saved to ' . $saveTo);
                 }
             } else {
                 if ($return) {

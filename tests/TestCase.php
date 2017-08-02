@@ -32,13 +32,21 @@ class TestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @return string
+     */
+    public function getTempDirectoryPath()
+    {
+        return sys_get_temp_dir();
+    }
+
+    /**
      * @param $name
      *
      * @return string
      */
     public function getTempFilePath($name)
     {
-        $tmpDir = sys_get_temp_dir();
+        $tmpDir = $this->getTempDirectoryPath();
 
         return $tmpDir . DIRECTORY_SEPARATOR . $name;
     }

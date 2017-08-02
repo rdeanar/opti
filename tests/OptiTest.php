@@ -60,10 +60,24 @@ class OptiTest extends TestCase
                         ],
                     ],
                 ],
+                'svgo'     => [
+                    'bin'      => 'svgo',
+                    'template' => '{options} --output={output} --input={input}',
+                    'configs'  => [
+                        'default' => [
+                            '--multipass',
+                            '--quiet',
+                            '--precision=5',
+                        ],
+                    ],
+                ],
             ],
             'scenarios' => [
                 'PNG' => [
                     'pngquant:default, optipng:default',
+                ],
+                'SVG' => [
+                    'svgo:default',
                 ],
             ],
         ];
@@ -188,5 +202,66 @@ class OptiTest extends TestCase
         $opti->processFile(new File($fileToProcessPath));
 
         $this->assertGreaterThan(filesize($fileToProcessPath), filesize($originalFilePath), 'Optimized file size is less than original');
+    }
+
+
+    public function testOptimizeWithOutputToFile()
+    {
+        $originalFilePath = $this->getFilePathFromDataDirectory('images' . DIRECTORY_SEPARATOR . 'logo.png');
+        $originalFileSize = filesize($originalFilePath);
+
+        $opti = $this->getOptiConfigured();
+
+        $fileToProcessPath = $this->copyFileToTempDir($originalFilePath);
+        $filePathOutputTo = $this->getTempFilePath('output.png');
+
+        $opti->setOutputTo($filePathOutputTo);
+        $opti->processFile(new File($fileToProcessPath));
+
+        $this->assertFileExists($filePathOutputTo, 'Output file exists');
+        clearstatcache(dirname($originalFilePath)); // Clear FS cache
+        $this->assertEquals($originalFileSize, filesize($originalFilePath), 'Original file not modified');
+
+        @unlink($filePathOutputTo);
+    }
+
+    public function testOptimizeWithOutputToDirectory()
+    {
+        $originalFilePath = $this->getFilePathFromDataDirectory('images' . DIRECTORY_SEPARATOR . 'logo.png');
+        $originalFileSize = filesize($originalFilePath);
+
+        $opti = $this->getOptiConfigured();
+
+        $fileToProcessPath = $this->copyFileToTempDir($originalFilePath);
+        $directory = $this->getTempDirectoryPath();
+
+        $opti->setOutputTo($directory);
+        $opti->processFile(new File($fileToProcessPath));
+
+        $expectedFilePath = $directory . DIRECTORY_SEPARATOR . basename($originalFilePath);
+
+        $this->assertFileExists($expectedFilePath, 'Output file exists');
+
+        clearstatcache(dirname($originalFilePath)); // Clear FS cache
+        $this->assertEquals($originalFileSize, filesize($originalFilePath), 'Original file not modified');
+
+        @unlink($expectedFilePath);
+    }
+
+    public function testOptimizeWithOutputToFileViaStdIn()
+    {
+        $filePath = $this->getFilePathFromDataDirectory('images' . DIRECTORY_SEPARATOR . 'without_xml_definition.svg');
+        $content = file_get_contents($filePath);
+
+        $opti = $this->getOptiConfigured();
+
+        $filePathOutputTo = $this->getTempFilePath('output.svg');
+
+        $opti->setOutputTo($filePathOutputTo);
+        $opti->processContent($content);
+
+        $this->assertFileExists($filePathOutputTo, 'Output file exists');
+
+        @unlink($filePathOutputTo);
     }
 }

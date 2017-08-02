@@ -8,6 +8,7 @@
 
 namespace Opti\Commands;
 
+use Opti\Exceptions\InvalidOutputPathException;
 use Opti\Opti;
 use Opti\Utils\ConsoleOutputLogger;
 use Psr\Log\LogLevel;
@@ -35,9 +36,10 @@ class OptimizeCommand extends Command
         $this->setDefinition(
             new InputDefinition([
 
-                new InputOption('config', 'c', InputOption::VALUE_OPTIONAL),
+                new InputOption('config', 'c', InputOption::VALUE_OPTIONAL, 'Path to custom config file to load'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug.'),
                 new InputOption('no-colors', '', InputOption::VALUE_NONE, 'Force no colors in output'),
+                new InputOption('out', 'o', InputOption::VALUE_OPTIONAL, 'Output file path or directory for output. In case batch mode can be only directory.'),
 
                 new InputArgument('files', InputArgument::IS_ARRAY | InputArgument::OPTIONAL),
             ])
@@ -80,19 +82,70 @@ class OptimizeCommand extends Command
                 '',
             ]);
 
+            try {
+                $this->checkAndSetupOutput($optimizer, $input->getOption('out'), count($files) === 1);
+            } catch (InvalidOutputPathException $e) {
+                $output->writeln('<fg=red>' . $e->getMessage() . '</>');
+                return 1;
+            }
+
             foreach ($input->getArgument('files') as $path) {
                 $optimizer->processFile($path);
             }
         } else {
-            $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
-
-            $outputFileContent = $optimizer->processContent($inputFileContent);
-
-            $result = fputs(STDOUT, empty($outputFileContent) ? $inputFileContent : $outputFileContent);
-
-            if (!$result) {
-                fputs(STDERR, 'Unable to write to stdout.');
+            try {
+                $this->checkAndSetupOutput($optimizer, $input->getOption('out'), true, true);
+            } catch (InvalidOutputPathException $e) {
+                $output->writeln('<fg=red>' . $e->getMessage() . '</>');
+                return 1;
             }
+
+            if (!$optimizer->isOutputSet()) {
+                $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
+
+                $result = fputs(STDOUT, empty($outputFileContent) ? $inputFileContent : $outputFileContent);
+
+                if (!$result) {
+                    fputs(STDERR, 'Unable to write to stdout.');
+                }
+
+            } else {
+                $optimizer->processContent($inputFileContent);
+            }
+        }
+    }
+
+    /**
+     * Checks output path and sets it to Opti
+     *
+     * @param Opti $opti
+     * @param string $output
+     * @param bool $single Is single file or batch mode
+     * @param bool $stdin Is STDIN used
+     *
+     * @throws InvalidOutputPathException
+     */
+    protected function checkAndSetupOutput(&$opti, $output, $single, $stdin = false)
+    {
+        if (!empty($output)) {
+
+            if (!$single) {
+                if (!is_dir($output)) {
+                    throw new InvalidOutputPathException('In batch mode output can be only exists directory');
+                }
+            }
+
+            if ($stdin && is_dir($output)) {
+                throw new InvalidOutputPathException('For STDIN output must be only path to file');
+            }
+
+            $checkWritableDir = is_dir($output) ? $output : (file_exists($output) ? $output : dirname($output));
+
+            if (!is_writable($checkWritableDir)) {
+                throw new InvalidOutputPathException('Output is not writable. Check: ' . $checkWritableDir);
+            }
+
+            $opti->setOutputTo($output);
         }
     }
 }
