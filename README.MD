@@ -7,7 +7,10 @@ Can be used as includable component or as a standalone tool.
 [![Build Status](https://travis-ci.org/rdeanar/opti.svg?branch=master)](https://travis-ci.org/rdeanar/opti)
 
 
-!!! Here goes an image that explains tool workflow. 
+## Workflow
+![Opti workflow](workflow.png)
+
+
 
 ## Usage
 
