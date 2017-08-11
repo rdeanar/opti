@@ -67,6 +67,8 @@ if (function_exists('ini_set')) {
     @ini_set('display_errors', 1);
 }
 
+Phar::mapPhar('opti.phar');
+
 require 'phar://opti.phar/bin/opti';
 
  __HALT_COMPILER();
