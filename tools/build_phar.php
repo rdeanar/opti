@@ -27,7 +27,6 @@ $finder_array = [];
 $finder = new Finder();
 $finder->files()
     ->ignoreVCS(true)
-    ->in(__DIR__ . '/../bin')
     ->in(__DIR__ . '/../src');
 
 
@@ -57,6 +56,12 @@ foreach ($finder_array as $finder) {
     }
 }
 
+echo 'Add bin/opti' . PHP_EOL;
+
+$content = file_get_contents(__DIR__ . '/../bin/opti');
+$content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
+$phar->addFromString('bin/opti', $content);
+
 
 $stub = <<<'EOF'
 #!/usr/bin/env php
@@ -75,10 +80,16 @@ require 'phar://opti.phar/bin/opti';
 
 EOF;
 
+echo 'Set stub' . PHP_EOL;
+
 $phar->setStub($stub);
+
+echo 'Finalize PHAR' . PHP_EOL;
 
 $phar->stopBuffering();
 
 unset($phar);
+
+echo 'Set PHAR executable' . PHP_EOL;
 
 chmod($pharFile, 0755);
